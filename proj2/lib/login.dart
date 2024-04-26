@@ -5,6 +5,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:deliveryapp/homescreen.dart'; // Make sure to import your homescreen file
 
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? key}) : super(key: key);
+
+  @override
+  State<MyWidget> createState() => _MyWidgetState();
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 

@@ -1,3 +1,4 @@
+import 'package:deliveryapp/browse_res.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -23,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _fetchUserName();
     _fetchRecommendedRestaurants();
+    _fetchRecentOrders();
   }
 
   Future<void> _fetchUserName() async {
@@ -59,13 +61,25 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Sample data for recent orders
-  List<String> recentOrders = [
-    "Order 1",
-    "Order 2",
-    "Order 3",
-    "Order 4",
-    "Order 5"
-  ];
+  List<String> recentOrders = [];
+
+  Future<void> _fetchRecentOrders() async {
+    try {
+      QuerySnapshot ordersSnapshot = await _firestore
+          .collection('orders')
+          .where('userId', isEqualTo: _auth.currentUser!.uid)
+          .orderBy('timestamp', descending: true)
+          .limit(5)
+          .get();
+
+      setState(() {
+        recentOrders =
+            ordersSnapshot.docs.map((doc) => doc['orderId'] as String).toList();
+      });
+    } catch (e) {
+      print('Error fetching recent orders: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,21 +100,54 @@ class _HomeScreenState extends State<HomeScreen> {
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
           ),
-          // Recent Orders
+          // Orders
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: Text(
-              'Recent Orders',
+              'Your Orders',
               style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: recentOrders.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(recentOrders[index]),
-                  subtitle: const Text('Order details...'),
+            child: StreamBuilder(
+              stream: _firestore
+                  .collection('users')
+                  .doc(_auth.currentUser!.uid)
+                  .collection('orders')
+                  .orderBy('timestamp', descending: true)
+                  .limit(5)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                }
+                if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                }
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return Text('No orders found.');
+                }
+
+                var orders = snapshot.data!.docs;
+
+                return ListView.builder(
+                  itemCount: orders.length,
+                  itemBuilder: (context, index) {
+                    var orderData = orders[index].data();
+                    var orderId = orders[index].id;
+                    var orderDate =
+                        (orderData['timestamp'] as Timestamp).toDate();
+
+                    return ListTile(
+                      title: Text('Order ID: $orderId'),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Date: ${orderDate.toString()}'),
+                        ],
+                      ),
+                    );
+                  },
                 );
               },
             ),
@@ -120,11 +167,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 var restaurant = recommendedRestaurants[index];
                 return GestureDetector(
                   onTap: () {
-                    // Navigate to browse.dart page when a restaurant is tapped
+                    // Navigate to browse_res.dart page when a restaurant is tapped
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => Browse(
+                        builder: (context) => RestaurantDetails(
                           restaurantId: restaurant['id']!,
                           restaurantName: restaurant['name']!,
                         ),

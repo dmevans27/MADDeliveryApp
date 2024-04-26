@@ -1,25 +1,27 @@
-import 'package:deliveryapp/homescreen.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart'; // Import your Firebase options file
 
-void main() {
-  runApp(const MyApp());
+import 'homescreen.dart'; // Assuming your HomeScreen is in a separate file
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Initialize Firebase with options from firebase_options.dart
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'This is delivery app',
+      title: 'Your App Title',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        primarySwatch: Colors.blue,
       ),
-      home: const HomeScreen(),
+      home: HomeScreen(), // or any other initial screen of your app
     );
   }
 }
-
