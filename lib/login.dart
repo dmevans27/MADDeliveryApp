@@ -1,4 +1,6 @@
+import 'package:deliveryapp/driverinterface.dart';
 import 'package:deliveryapp/firebase_options.dart';
+import 'package:deliveryapp/homescreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -28,6 +30,22 @@ import 'register.dart';
           email: _signInEmailController.text,
           password: _signInPasswordController.text,
         );
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).get();
+
+    if (userDoc.exists) {
+      String role = userDoc['Role'];
+      if (role == 'user') {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+      } else if (role == 'driver') {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const DriverPage()));
+      } else {
+        // Handle unknown role
+        print('Unknown role: $role');
+      }
+    } else {
+      // Handle user document not found
+      print('User document not found for user ID: ${user.user!.uid}');
+    }
         
       } catch (error) {
         // Handle sign-in errors
@@ -54,6 +72,23 @@ import 'register.dart';
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children:[
+              const Card( // Title Card
+            elevation: 3,
+            color: Color.fromARGB(255, 203, 116, 219),
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Text(
+                "Welcome to EvansLomini Delivery!",
+                
+                style: TextStyle(
+                  
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 50),
               const Text("Login to application"),
               TextFormField(
                 controller: _signInEmailController,
