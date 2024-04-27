@@ -1,133 +1,119 @@
+import 'package:deliveryapp/driverinterface.dart';
 import 'package:deliveryapp/firebase_options.dart';
+import 'package:deliveryapp/homescreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:deliveryapp/homescreen.dart'; // Make sure to import your homescreen file
+import 'register.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  class LoginPage extends StatefulWidget {
+    const LoginPage({Key? key});
 
-  @override
-  State<MyWidget> createState() => _MyWidgetState();
-}
+    @override
+    State<LoginPage> createState() => _LoginPageState();
+  }
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  class _LoginPageState extends State<LoginPage> {
+    final FirebaseAuth _auth = FirebaseAuth.instance;
+    final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+    final TextEditingController _signInEmailController = TextEditingController();
+    final TextEditingController _signInPasswordController = TextEditingController();
+  
 
-  // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-
-  // Call function to add sample restaurants
-  await addSampleRestaurants();
-
-  runApp(MyApp());
-}
-
-Future<void> addSampleRestaurants() async {
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-
+   
+    Future<void> _signIn(BuildContext context) async {
   try {
-    await firestore.collection('restaurants').doc('restaurant1').set({
-      'name': 'Restaurant 1',
-      'description': 'Description of Restaurant 1',
-    });
-
-    await firestore.collection('restaurants').doc('restaurant2').set({
-      'name': 'Restaurant 2',
-      'description': 'Description of Restaurant 2',
-    });
-
-    // Add more restaurants as needed
-  } catch (e) {
-    print('Error adding sample restaurants: $e');
-  }
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Your App Title',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: MyWidget(), // Login screen as the initial screen
+    await Firebase.initializeApp();
+    UserCredential user = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: _signInEmailController.text,
+      password: _signInPasswordController.text,
     );
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.user!.uid).get();
+    DocumentSnapshot driverDoc = await FirebaseFirestore.instance.collection('drivers').doc(user.user!.uid).get();
+
+    if (userDoc.exists) {
+      String role = userDoc['Role'];
+      if (role == 'customer') {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+      } else if (role == 'driver') {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DriverPage()));
+      } else {
+        // Handle unknown role
+        print('Unknown role: $role');
+      }
+    } else if (driverDoc.exists) {
+      // If the user is a driver
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DriverPage()));
+    } else {
+      // Handle user document not found
+      print('User document not found for user ID: ${user.user!.uid}');
+    }
+  } catch (error) {
+    // Handle sign-in errors
+    print("Sign-in error: $error");
   }
 }
 
-class MyWidget extends StatefulWidget {
-  const MyWidget({Key? key}) : super(key: key);
+    @override
+    void dispose() {
+      _signInEmailController.dispose();
+      _signInPasswordController.dispose();
+      super.dispose();
+    }
 
-  @override
-  State<MyWidget> createState() => _MyWidgetState();
-}
-
-class _MyWidgetState extends State<MyWidget> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-
-  Future<void> _login() async {
-    try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
+    @override
+    Widget build(BuildContext context) {
+      return Scaffold(
+        appBar: AppBar(
+          backgroundColor: const Color.fromARGB(255, 203, 116, 219),
+          title: const Text('Login'),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(10.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children:[
+              const Card( // Title Card
+            elevation: 3,
+            color: Color.fromARGB(255, 203, 116, 219),
+            child: Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Text(
+                "Welcome to EvansLomini Delivery!",
+                
+                style: TextStyle(
+                  
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 50),
+              const Text("Login to application"),
+              TextFormField(
+                controller: _signInEmailController,
+                decoration: const InputDecoration(labelText: 'Email'),
+              ),
+              TextFormField(
+                controller: _signInPasswordController,
+                decoration: const InputDecoration(labelText: 'Password'),
+                obscureText: true,
+              ),
+              const SizedBox(height: 16.0),
+              ElevatedButton(
+                onPressed: () => _signIn(context),
+                child: const Text('Sign In'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const RegistrationPage())),
+                child: const Text("Need to create an account? Register Here!"),
+              )
+            ]
+          )
+        )
       );
-
-      // Call function to add sample restaurants
-      await addSampleRestaurants();
-
-      // Navigate to home screen after successful login
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
-      );
-    } catch (e) {
-      // Handle login errors
-      print('Login failed: $e');
-      // You can display an error message to the user
     }
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Login"),
-        backgroundColor: Colors.blue,
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(
-                labelText: 'Email',
-              ),
-            ),
-            SizedBox(height: 16.0),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(
-                labelText: 'Password',
-              ),
-              obscureText: true,
-            ),
-            SizedBox(height: 16.0),
-            ElevatedButton(
-              onPressed: _login,
-              child: Text('Login'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

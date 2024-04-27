@@ -1,12 +1,16 @@
+import 'package:deliveryapp/firebase_options.dart';
+import 'package:deliveryapp/homescreen.dart';
+import 'package:deliveryapp/login.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart'; // Import your Firebase options file
+import 'firebase_options.dart'; 
+import 'login.dart';
 
 import 'homescreen.dart'; // Assuming your HomeScreen is in a separate file
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize Firebase with options from firebase_options.dart
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -17,11 +21,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Your App Title',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: HomeScreen(), // or any other initial screen of your app
+      home: LoginPage(), // or any other initial screen of your app
     );
   }
 }

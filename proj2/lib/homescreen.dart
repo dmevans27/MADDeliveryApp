@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
           await _firestore.collection('users').doc(userId).get();
 
       setState(() {
-        _userName = userSnapshot['username'];
+        _userName = userSnapshot['Username'];
       });
     } catch (e) {
       print('Error fetching username: $e');

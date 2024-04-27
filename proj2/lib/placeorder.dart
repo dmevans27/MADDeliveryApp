@@ -14,7 +14,7 @@ class _PlaceOrderState extends State<PlaceOrder> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: Navigation(),
+      drawer: const Navigation(),
       appBar: AppBar(
         title: const Text("Check Order"),
         backgroundColor: Colors.purple[100],
@@ -32,7 +32,7 @@ class _PlaceOrderState extends State<PlaceOrder> {
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
+          return const Center(
             child: CircularProgressIndicator(),
           );
         }
@@ -42,7 +42,7 @@ class _PlaceOrderState extends State<PlaceOrder> {
           );
         }
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return Center(
+          return const Center(
             child: Text('No items in cart'),
           );
         }
@@ -77,14 +77,14 @@ class _PlaceOrderState extends State<PlaceOrder> {
                 children: [
                   Text(
                     'Total: \$${totalPrice.toStringAsFixed(2)}',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                  SizedBox(width: 20), // Adjust the width as needed
+                  const SizedBox(width: 20), // Adjust the width as needed
                   ElevatedButton(
                     onPressed: () {
                       _placeOrder(cartItems, totalPrice);
                     },
-                    child: Text('Place Order'),
+                    child: const Text('Place Order'),
                   ),
                 ],
               ),
@@ -96,44 +96,49 @@ class _PlaceOrderState extends State<PlaceOrder> {
   }
 
   void _placeOrder(List<DocumentSnapshot> cartItems, double totalPrice) async {
-    try {
-      String userId = FirebaseAuth.instance.currentUser!.uid;
-      CollectionReference ordersCollection =
-          FirebaseFirestore.instance.collection('cus_orders');
+   try {
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    DocumentSnapshot userData = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    String userName = userData['FirstName'] + ' ' + userData['LastName'];
+    String userAddress = userData['UserAddress']; // Add this line to get the user's address
 
-      // Create a new order document with status 'preparing'
-      DocumentReference newOrderRef = await ordersCollection.add({
-        'userId': userId,
-        'totalPrice': totalPrice,
-        'status': 'preparing', // Set the status here
-        'items': cartItems.map((item) => item.data()).toList(),
-        'timestamp': Timestamp.now(),
-      });
+    CollectionReference ordersCollection = FirebaseFirestore.instance.collection('cus_orders');
 
-      // Store the reference to the order document in the user's collection
-      await FirebaseFirestore.instance
-          .collection('users')
-          .doc(userId)
-          .collection('orders')
-          .doc(newOrderRef.id) // Use the order document ID as the reference
-          .set({
-        'orderId': newOrderRef.id,
-        'timestamp': Timestamp.now(),
-      });
+    // Create a new order document with status 'preparing'
+    DocumentReference newOrderRef = await ordersCollection.add({
+      'customerName': userName,
+      'userId': userId,
+      'userAddress': userAddress, // Add the user's address to the order document
+      'totalPrice': totalPrice,
+      'status': 'preparing', // Set the status here
+      'items': cartItems.map((item) => item.data()).toList(),
+      'timestamp': Timestamp.now(),
+    });
 
-      // Delete items from the user's cart
-      await Future.forEach(cartItems, (item) async {
-        await item.reference.delete();
-      });
+    // Store the reference to the order document in the user's collection
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(userId)
+        .collection('orders')
+        .doc(newOrderRef.id) // Use the order document ID as the reference
+        .set({
+      'orderId': newOrderRef.id,
+      'timestamp': Timestamp.now(),
+    });
 
-      // Show a success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Order placed successfully!')),
-      );
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to place order: $error')),
-      );
-    }
+    // Delete items from the user's cart
+    await Future.forEach(cartItems, (item) async {
+      await item.reference.delete();
+    });
+
+    // Show a success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Order placed successfully!')),
+    );
+  } catch (error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to place order: $error')),
+    );
   }
+}
 }

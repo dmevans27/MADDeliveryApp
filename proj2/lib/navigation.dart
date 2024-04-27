@@ -1,5 +1,6 @@
 import 'package:deliveryapp/login.dart';
 import 'package:deliveryapp/profile.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'homescreen.dart';
 import 'browse.dart';
@@ -134,13 +135,14 @@ class Navigation extends StatelessWidget {
             tileColor: Colors.orange[100],
             iconColor: Colors.black87,
             leading: const Icon(Icons.person),
-            title: const Text('Login'), // Change the title to 'Login'
+            title: const Text('Sign Out'), // Change the title to 'Login'
             onTap: () {
               Navigator.pop(context);
+              FirebaseAuth.instance.signOut();
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                   builder: (context) =>
-                      const LoginScreen(), // Navigate to the LoginScreen
+                      const LoginPage(), // Navigate to the LoginScreen
                 ),
               );
             },
