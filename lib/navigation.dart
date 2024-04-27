@@ -1,5 +1,5 @@
 import 'package:deliveryapp/login.dart';
-
+import 'reviewlist.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'homescreen.dart';
@@ -111,6 +111,21 @@ class Navigation extends StatelessWidget {
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                   builder: (context) => const ReviewPage(),
+                ),
+              );
+            },
+          ),
+          const Divider(color: Colors.black54),
+          ListTile(
+            tileColor: Colors.orange[100],
+            iconColor: Colors.black87,
+            leading: const Icon(Icons.person),
+            title: const Text('Review List'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (context) => ReviewList(),
                 ),
               );
             },

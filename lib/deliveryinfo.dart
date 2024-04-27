@@ -1,11 +1,12 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class OrderDetailsPage extends StatelessWidget {
   final String orderId;
+  final bool isAcceptedTab;
 
-  OrderDetailsPage({required this.orderId});
+  OrderDetailsPage({required this.orderId, this.isAcceptedTab = false});
 
   @override
   Widget build(BuildContext context) {
@@ -14,30 +15,28 @@ class OrderDetailsPage extends StatelessWidget {
         backgroundColor: Color.fromARGB(255, 104, 193, 213),
         title: Text('Order Details'),
       ),
-      body: StreamBuilder(
+      body: StreamBuilder<DocumentSnapshot>(
         stream: FirebaseFirestore.instance.collection('cus_orders').doc(orderId).snapshots(),
         builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return Center(
-              child: CircularProgressIndicator(),
-            );
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
           }
-          var order = snapshot.data;
+          if (!snapshot.hasData) {
+            return Center(child: Text("No data available"));
+          }
+          var order = snapshot.data!.data() as Map<String, dynamic>;
           return Padding(
             padding: EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Customer: ${order?['customerName']}'),
-                Text('User Address: ${order?['userAddress']}'),
-                Text('Time Placed: ${order?['timestamp']}'),
-        
+                Text('Customer: ${order['customerName']}'),
+                Text('User Address: ${order['userAddress']}'),
+                Text('Time Placed: ${order['timestamp']}'),
                 SizedBox(height: 16.0),
                 ElevatedButton(
-                  onPressed: () {
-                    _acceptOrder(context, orderId); 
-                  },
-                  child: Text('Accept Order'),
+                  onPressed: () => isAcceptedTab ? _completeOrder(context, orderId) : _acceptOrder(context, orderId), 
+                  child: Text(isAcceptedTab ? 'Order Complete' : 'Accept Order'),
                 ),
               ],
             ),
@@ -48,31 +47,41 @@ class OrderDetailsPage extends StatelessWidget {
   }
 
   void _acceptOrder(BuildContext context, String orderId) async {
-  try {
-    // Get the current user's ID
-    String driverId = FirebaseAuth.instance.currentUser!.uid;
+    try {
+      String driverId = FirebaseAuth.instance.currentUser!.uid;
+      await FirebaseFirestore.instance.collection('cus_orders').doc(orderId).update({
+        'status': 'on the way',
+        'driverId': driverId,
+      });
 
-    // Update the status of the order to "on the way" and set the driver ID
-    await FirebaseFirestore.instance.collection('cus_orders').doc(orderId).update({
-      'status': 'on the way',
-      'driverId': driverId,
-    });
+      // Optionally update any other relevant details or databases.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Order accepted successfully!')),
+      );
 
-    // Add the order to the driver's accepted orders
-    await FirebaseFirestore.instance.collection('drivers').doc(driverId).collection('accepted_orders').doc(orderId).set({
-      'orderId': orderId,
-      'acceptedTimestamp': Timestamp.now(),
-    });
-
-    // Show a success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Order accepted successfully!')),
-    );
-  } catch (error) {
-    // Show an error message if something goes wrong
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Failed to accept order: $error')),
-    );
+      Navigator.pop(context);
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to accept order: $error')),
+      );
+    }
   }
-}
+
+  void _completeOrder(BuildContext context, String orderId) async {
+    try {
+      await FirebaseFirestore.instance.collection('cus_orders').doc(orderId).update({
+        'status': 'delivered',
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Order marked as complete!')),
+      );
+
+      Navigator.pop(context);
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to complete order: $error')),
+      );
+    }
+  }
 }

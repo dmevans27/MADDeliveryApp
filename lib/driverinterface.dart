@@ -1,13 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'deliveryinfo.dart';  // Assuming this file contains the OrderDetailsPage
+import 'deliveryinfo.dart'; // Assuming this file contains the OrderDetailsPage
 import 'login.dart';
 
 class DriverPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final User? currentUser = FirebaseAuth.instance.currentUser; // Ensure the user is logged in
+    final User? currentUser =
+        FirebaseAuth.instance.currentUser; // Ensure the user is logged in
 
     return DefaultTabController(
       length: 2,
@@ -38,7 +39,9 @@ class DriverPage extends StatelessWidget {
           children: [
             // Tab for Available Orders - Using the original code you provided
             StreamBuilder(
-              stream: FirebaseFirestore.instance.collection('cus_orders').snapshots(),
+              stream: FirebaseFirestore.instance
+                  .collection('cus_orders')
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
@@ -51,18 +54,22 @@ class DriverPage extends StatelessWidget {
                 }
 
                 return ListView(
-                  children: snapshot.data!.docs.map((DocumentSnapshot document) {
-                    Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                  children:
+                      snapshot.data!.docs.map((DocumentSnapshot document) {
+                    Map<String, dynamic> data =
+                        document.data() as Map<String, dynamic>;
                     return Card(
                       color: Colors.green[100],
                       child: ListTile(
                         title: Text('Order ID: ${document.id}'),
-                        subtitle: Text('Customer: ${data['customerName']}\nAddress: ${data['userAddress']}'),
+                        subtitle: Text(
+                            'Customer: ${data['customerName']}\nAddress: ${data['userAddress']}'),
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => OrderDetailsPage(orderId: document.id),
+                              builder: (context) => OrderDetailsPage(
+                                  orderId: document.id, isAcceptedTab: false),
                             ),
                           );
                         },
@@ -75,10 +82,10 @@ class DriverPage extends StatelessWidget {
             // Tab for Accepted Orders - Showing only orders that are "on the way" for the current driver
             StreamBuilder(
               stream: FirebaseFirestore.instance
-                .collection('cus_orders')
-                .where('driverId', isEqualTo: currentUser?.uid)
-                .where('status', isEqualTo: 'on the way')
-                .snapshots(),
+                  .collection('cus_orders')
+                  .where('driverId', isEqualTo: currentUser?.uid)
+                  .where('status', isEqualTo: 'on the way')
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
@@ -99,12 +106,14 @@ class DriverPage extends StatelessWidget {
                       color: Colors.blue[100],
                       child: ListTile(
                         title: Text('Order ID: ${doc.id}'),
-                        subtitle: Text('Customer: ${data['customerName']}\nAddress: ${data['userAddress']}'),
+                        subtitle: Text(
+                            'Customer: ${data['customerName']}\nAddress: ${data['userAddress']}'),
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => OrderDetailsPage(orderId: doc.id),
+                              builder: (context) => OrderDetailsPage(
+                                  orderId: doc.id, isAcceptedTab: true),
                             ),
                           );
                         },
