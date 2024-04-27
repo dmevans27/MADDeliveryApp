@@ -41,6 +41,7 @@ class DriverPage extends StatelessWidget {
             StreamBuilder(
               stream: FirebaseFirestore.instance
                   .collection('cus_orders')
+                  .where('status', isEqualTo: 'preparing')
                   .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -58,6 +59,7 @@ class DriverPage extends StatelessWidget {
                       snapshot.data!.docs.map((DocumentSnapshot document) {
                     Map<String, dynamic> data =
                         document.data() as Map<String, dynamic>;
+                        
                     return Card(
                       color: Colors.green[100],
                       child: ListTile(
@@ -75,6 +77,7 @@ class DriverPage extends StatelessWidget {
                         },
                       ),
                     );
+                        
                   }).toList(),
                 );
               },
