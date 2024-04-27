@@ -1,5 +1,5 @@
 import 'package:deliveryapp/login.dart';
-import 'package:deliveryapp/profile.dart';
+import 'reviewlist.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'homescreen.dart';
@@ -120,12 +120,12 @@ class Navigation extends StatelessWidget {
             tileColor: Colors.orange[100],
             iconColor: Colors.black87,
             leading: const Icon(Icons.person),
-            title: const Text('Profile'),
+            title: const Text('Review List'),
             onTap: () {
               Navigator.pop(context);
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
-                  builder: (context) => const ProfilePage(),
+                  builder: (context) => ReviewList(),
                 ),
               );
             },
