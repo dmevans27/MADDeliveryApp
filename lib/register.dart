@@ -38,16 +38,32 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
         // Store user's email in Firestore along with their UID
         CollectionReference users = FirebaseFirestore.instance.collection('users');
+        if (_selectedRole == UserRole.user){
         await users.doc(user.user!.uid).set({
           'Email': _registerEmailController.text,
           'FirstName':_registerFirstName.text,
           'LastName':_registerLastName.text,
-          'Role': _selectedRole == UserRole.user ? 'user' : 'driver',
+          'Role':  'user',
+          'UserAddress': _registerAddressController.text,
           'RegistrationDateTime': Timestamp.now(),
           'Username': _registerUsername.text,
           
           
           });
+        }
+        else{
+         await FirebaseFirestore.instance.collection('drivers').doc(user.user!.uid).set({
+          'Email': _registerEmailController.text,
+          'FirstName':_registerFirstName.text,
+          'LastName':_registerLastName.text,
+          'Role': 'driver',
+          'UserAddress': _registerAddressController.text,
+          'RegistrationDateTime': Timestamp.now(),
+          'Username': _registerUsername.text,
+          
+          
+          });
+        }
           if (_selectedRole == UserRole.user) {
      Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
     } else {
@@ -77,6 +93,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
       _registerUsername.dispose();
       super.dispose();
     }
+final TextEditingController _registerAddressController=TextEditingController();
 @override
     Widget build(BuildContext context) {
       return Scaffold(
@@ -114,6 +131,11 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   controller: _registerUsername,
                   decoration: const InputDecoration(labelText: 'Username'),
                   obscureText: false,
+                ),
+                TextFormField(
+                controller: _registerAddressController,
+                decoration: const InputDecoration(labelText: 'Address'),
+                obscureText: false,
                 ),
                 DropdownButtonFormField<UserRole>(
               value: _selectedRole,

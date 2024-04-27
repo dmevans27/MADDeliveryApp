@@ -24,34 +24,37 @@ import 'register.dart';
 
    
     Future<void> _signIn(BuildContext context) async {
-      try {
-        await Firebase.initializeApp();
-        UserCredential user = await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _signInEmailController.text,
-          password: _signInPasswordController.text,
-        );
-        DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid).get();
+  try {
+    await Firebase.initializeApp();
+    UserCredential user = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: _signInEmailController.text,
+      password: _signInPasswordController.text,
+    );
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.user!.uid).get();
+    DocumentSnapshot driverDoc = await FirebaseFirestore.instance.collection('drivers').doc(user.user!.uid).get();
 
     if (userDoc.exists) {
       String role = userDoc['Role'];
       if (role == 'user') {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
       } else if (role == 'driver') {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const DriverPage()));
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DriverPage()));
       } else {
         // Handle unknown role
         print('Unknown role: $role');
       }
+    } else if (driverDoc.exists) {
+      // If the user is a driver
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DriverPage()));
     } else {
       // Handle user document not found
       print('User document not found for user ID: ${user.user!.uid}');
     }
-        
-      } catch (error) {
-        // Handle sign-in errors
-        print("Sign-in error: $error");
-      }
-    }
+  } catch (error) {
+    // Handle sign-in errors
+    print("Sign-in error: $error");
+  }
+}
 
     @override
     void dispose() {
