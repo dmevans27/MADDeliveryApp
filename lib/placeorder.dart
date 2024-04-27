@@ -98,12 +98,15 @@ class _PlaceOrderState extends State<PlaceOrder> {
   void _placeOrder(List<DocumentSnapshot> cartItems, double totalPrice) async {
     try {
       String userId = FirebaseAuth.instance.currentUser!.uid;
+      DocumentSnapshot userData = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+    String userName = userData['FirstName'] + ' ' + userData['LastName'];
       CollectionReference ordersCollection =
           FirebaseFirestore.instance.collection('cus_orders');
+      
 
       // Create a new order document with status 'preparing'
       DocumentReference newOrderRef = await ordersCollection.add({
-        'userId': userId,
+        'customerName': userName,
         'totalPrice': totalPrice,
         'status': 'preparing', // Set the status here
         'items': cartItems.map((item) => item.data()).toList(),
