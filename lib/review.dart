@@ -28,7 +28,10 @@ Future<void> _fetchRestaurants() async {
   try {
     QuerySnapshot snapshot = await FirebaseFirestore.instance.collection('restaurants').get();
     setState(() {
-      _restaurants = snapshot.docs.map((doc) => doc.id).toList(); // Get the document IDs (restaurant names)
+      _restaurants = snapshot.docs
+    .map((doc) => (doc.data() as Map<String, dynamic>)['name'] ?? 'No Name')
+    .toList()
+    .cast<String>(); // Cast the list to List<String>the 'name' field of each document if it exists, otherwise use 'No Name'
       _selectedRestaurant = _restaurants.isNotEmpty ? _restaurants.first : ''; // Set the first restaurant as default
     });
   } catch (error) {
@@ -36,8 +39,11 @@ Future<void> _fetchRestaurants() async {
   }
 }
 
+
+
 Widget build(BuildContext context) {
   return Scaffold(
+    drawer: const Navigation(),
     appBar: AppBar(
       title: const Text('Submit Restaurant Review'),
     ),
@@ -153,15 +159,51 @@ void _submitReview(BuildContext context) async {
     return;
   }
 
-  // Add the review to Firestore
   try {
-    await FirebaseFirestore.instance.collection('restaurants').doc(_selectedRestaurant).collection('reviews').add({
-      'title': title,
-      'comment': comment,
-      'rating': _rating,
-      // Add other fields such as userId, timestamp, etc.
-    });
-    Navigator.pop(context); // Return to the previous page
+    // Query for the restaurant document based on the selected restaurant name
+    QuerySnapshot restaurantQuery = await FirebaseFirestore.instance.collection('restaurants')
+      .where('name', isEqualTo: _selectedRestaurant)
+      .get();
+
+    // Check if any restaurant documents match the selected name
+    if (restaurantQuery.docs.isNotEmpty) {
+      // Get the first matching restaurant document
+      DocumentSnapshot restaurantSnapshot = restaurantQuery.docs.first;
+
+      // Explicitly cast data to a map
+      Map<String, dynamic>? data = restaurantSnapshot.data() as Map<String, dynamic>?;
+
+      // Check if data is not null and contains the 'numberOfReviews' field
+      if (data != null && data.containsKey('numberOfReviews')) {
+        // Get the current number of reviews
+        int numberOfReviews = data['numberOfReviews'] ?? 0;
+
+        // Increment the number of reviews
+        numberOfReviews++;
+
+        // Add the review document to the 'reviews' subcollection of the selected restaurant document
+        await restaurantSnapshot.reference.collection('reviews').doc('review$numberOfReviews').set({
+          'title': title,
+          'comment': comment,
+          'rating': _rating,
+          // Add other fields such as userId, timestamp, etc.
+        });
+
+        // Update the number of reviews in the restaurant document
+        await restaurantSnapshot.reference.update({'numberOfReviews': numberOfReviews});
+
+        // Navigate back to the home screen after submitting the review
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Restaurant document is missing the numberOfReviews field.')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Selected restaurant does not exist.')),
+      );
+    }
   } catch (error) {
     // Handle errors
     print('Error submitting review: $error');
