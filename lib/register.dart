@@ -1,9 +1,14 @@
+import 'package:deliveryapp/driverinterface.dart';
 import 'package:deliveryapp/firebase_options.dart';
+import 'package:deliveryapp/homescreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'login.dart';
+
+
+enum UserRole {user, driver}
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({Key? key}) : super(key: key);
@@ -14,12 +19,14 @@ class RegistrationPage extends StatefulWidget {
 
 class _RegistrationPageState extends State<RegistrationPage> {
 
+    
     final TextEditingController _registerEmailController = TextEditingController();
     final TextEditingController _registerPasswordController = TextEditingController();
     final TextEditingController _registerFirstName=TextEditingController();
     final TextEditingController _registerLastName=TextEditingController();
     final TextEditingController _registerUsername=TextEditingController();
    
+   UserRole? _selectedRole;
    String? _errorMessage;
 
    Future<void> _register(BuildContext context) async {
@@ -36,12 +43,20 @@ class _RegistrationPageState extends State<RegistrationPage> {
           'Email': _registerEmailController.text,
           'FirstName':_registerFirstName.text,
           'LastName':_registerLastName.text,
-          'Role': 'user',
+          'Role': _selectedRole == UserRole.user? 'customer' : 'driver',
           'RegistrationDateTime': Timestamp.now(),
           'Username': _registerUsername.text,
           
-          
           });
+
+          if (_selectedRole == UserRole.user) {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+    } else {
+      Navigator.push(context, MaterialPageRoute(builder: (context) => DriverPage()));
+    }
+        
+
+      
 
       }on FirebaseAuthException catch (error) {
         
@@ -108,7 +123,25 @@ class _RegistrationPageState extends State<RegistrationPage> {
                  Text( _errorMessage!,
                   style: const TextStyle(color: Colors.red),
                  ),
-                
+                 DropdownButtonFormField<UserRole>(
+              value: _selectedRole,
+              items: const  [
+                DropdownMenuItem(
+                  value: UserRole.user,
+                  child: Text('Customer'),
+                ),
+                DropdownMenuItem(
+                  value: UserRole.driver,
+                  child: Text('Driver'),
+                ),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  _selectedRole = value;
+                });
+              },
+              decoration: const InputDecoration(labelText: 'Select Role'),
+            ),
                 const SizedBox(height: 16.0),
                 ElevatedButton(
                   onPressed: () => _register(context),

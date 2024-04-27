@@ -3,7 +3,8 @@ import 'package:deliveryapp/homescreen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart'; // Import your Firebase options file
+import 'firebase_options.dart'; 
+import 'login.dart';
 
 import 'homescreen.dart'; // Assuming your HomeScreen is in a separate file
 
@@ -12,7 +13,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: HomeScreen(), // or any other initial screen of your app
+      home: LoginPage(), // or any other initial screen of your app
     );
   }
 }

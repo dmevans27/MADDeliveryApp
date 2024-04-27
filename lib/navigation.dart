@@ -140,7 +140,7 @@ class Navigation extends StatelessWidget {
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                   builder: (context) =>
-                      const LoginScreen(), // Navigate to the LoginScreen
+                      const LoginPage(), // Navigate to the LoginScreen
                 ),
               );
             },
