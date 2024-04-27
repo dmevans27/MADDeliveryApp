@@ -10,14 +10,21 @@ class ReviewPage extends StatefulWidget {
   _ReviewPageState createState() => _ReviewPageState();
 }
 
-class _ReviewPageState extends State
+class _ReviewPageState extends State<ReviewPage>
 {
   int _rating = 0; // Default rating
+late String _selectedItem;
 
+@override
+void initState() {
+    super.initState();
+    _selectedItem = _items.first;
+  }
+
+  
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _commentController = TextEditingController();
   String _selectedReviewType = 'Driver'; // Default review type
-  String _selectedItem = ''; // Default selected item
   List<String> _items = ['Driver A', 'Driver B', 'Driver C']; // Sample list of drivers, replace with actual data
 
   @override
