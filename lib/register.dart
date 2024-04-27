@@ -10,7 +10,7 @@ import 'homescreen.dart';
 import 'driverinterface.dart';
 
 
-enum UserRole {user, driver}
+enum UserRole {customer, driver}
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -30,7 +30,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
    
    UserRole? _selectedRole;
    String? _errorMessage;
-   UserRole? _selectedRole;
 
    Future<void> _register(BuildContext context) async {
       try {
@@ -42,12 +41,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
         // Store user's email in Firestore along with their UID
         CollectionReference users = FirebaseFirestore.instance.collection('users');
-        if (_selectedRole == UserRole.user){
+        if (_selectedRole == UserRole.customer){
         await users.doc(user.user!.uid).set({
           'Email': _registerEmailController.text,
           'FirstName':_registerFirstName.text,
           'LastName':_registerLastName.text,
-          'Role':  'user',
+          'Role':  'customer',
           'UserAddress': _registerAddressController.text,
           'RegistrationDateTime': Timestamp.now(),
           'Username': _registerUsername.text,
@@ -68,7 +67,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           
           });
         }
-          if (_selectedRole == UserRole.user) {
+ if (_selectedRole == UserRole.customer) {
      Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
     } else {
       Navigator.push(context, MaterialPageRoute(builder: (context) => DriverPage()));
@@ -141,34 +140,12 @@ final TextEditingController _registerAddressController=TextEditingController();
                 decoration: const InputDecoration(labelText: 'Address'),
                 obscureText: false,
                 ),
-                DropdownButtonFormField<UserRole>(
-              value: _selectedRole,
-              items: const [
-                DropdownMenuItem(
-                  value: UserRole.user,
-                  child: Text('User'),
-                ),
-                DropdownMenuItem(
-                  value: UserRole.driver,
-                  child: Text('Driver'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedRole = value;
-                });
-              },
-              decoration: const InputDecoration(labelText: 'Select Role'),
-            ),
-                if(_errorMessage != null)
-                 Text( _errorMessage!,
-                  style: const TextStyle(color: Colors.red),
-                 ),
+            
                  DropdownButtonFormField<UserRole>(
               value: _selectedRole,
               items: const  [
                 DropdownMenuItem(
-                  value: UserRole.user,
+                  value: UserRole.customer,
                   child: Text('Customer'),
                 ),
                 DropdownMenuItem(

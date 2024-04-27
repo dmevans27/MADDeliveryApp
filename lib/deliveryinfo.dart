@@ -31,11 +31,11 @@ class OrderDetailsPage extends StatelessWidget {
                 Text('Customer: ${order?['customerName']}'),
                 Text('User Address: ${order?['userAddress']}'),
                 Text('Time Placed: ${order?['timestamp']}'),
-                // Add more details as needed
+        
                 SizedBox(height: 16.0),
                 ElevatedButton(
                   onPressed: () {
-                    _acceptOrder(context, orderId); // Pass context here
+                    _acceptOrder(context, orderId); 
                   },
                   child: Text('Accept Order'),
                 ),

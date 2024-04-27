@@ -35,7 +35,7 @@ import 'register.dart';
 
     if (userDoc.exists) {
       String role = userDoc['Role'];
-      if (role == 'user') {
+      if (role == 'customer') {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
       } else if (role == 'driver') {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DriverPage()));

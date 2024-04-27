@@ -43,23 +43,22 @@ class DriverPage extends StatelessWidget {
               // Determine the status of the order
               var status = order?['status'];
 
-              // Display available orders or accepted orders based on the status
+
               if (status == 'accepted') {
                 return Card(
-                  color: Colors.blue[100], // Example color for accepted orders
+                  color: Colors.blue[100],
                   child: ListTile(
                     title: Text('Order ID: ${order?.id}'),
                     subtitle: Text('Customer: ${order?['customerName']}\nAddress: ${order?['userAddress']}'),
-                    // You can add more details or actions specific to accepted orders here
                   ),
                 );
               } else {
                 return Card(
-                  color: Colors.green[100], // Example color for available orders
+                  color: Colors.green[100],
                   child: ListTile(
                     title: Text('Order ID: ${order?.id}'),
                     subtitle: Text('Customer: ${order?['customerName']}\nAddress: ${order?['userAddress']}'),
-                    // You can add more details or actions specific to available orders here
+
                     onTap: () {
                       Navigator.push(
                         context,
