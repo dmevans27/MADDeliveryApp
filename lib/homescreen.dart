@@ -101,15 +101,18 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           // Orders
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          const Padding(
+            
+            padding: EdgeInsets.all(16.0),
             child: Text(
               'Your Orders',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
           ),
           Expanded(
+            
             child: StreamBuilder(
+              
               stream: _firestore
                   .collection('users')
                   .doc(_auth.currentUser!.uid)

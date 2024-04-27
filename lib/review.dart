@@ -45,6 +45,7 @@ Widget build(BuildContext context) {
   return Scaffold(
     drawer: const Navigation(),
     appBar: AppBar(
+      backgroundColor: Colors.green[200],
       title: const Text('Submit Restaurant Review'),
     ),
     body: Padding(
