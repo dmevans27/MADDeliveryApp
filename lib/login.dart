@@ -24,13 +24,14 @@ import 'register.dart';
 
    
     Future<void> _signIn(BuildContext context) async {
-      try {
-        await Firebase.initializeApp();
-        UserCredential user = await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _signInEmailController.text,
-          password: _signInPasswordController.text,
-        );
-DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.user!.uid).get();
+  try {
+    await Firebase.initializeApp();
+    UserCredential user = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: _signInEmailController.text,
+      password: _signInPasswordController.text,
+    );
+    DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').doc(user.user!.uid).get();
+    DocumentSnapshot driverDoc = await FirebaseFirestore.instance.collection('drivers').doc(user.user!.uid).get();
 
     if (userDoc.exists) {
       String role = userDoc['Role'];
@@ -42,16 +43,18 @@ DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').
         // Handle unknown role
         print('Unknown role: $role');
       }
+    } else if (driverDoc.exists) {
+      // If the user is a driver
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => DriverPage()));
     } else {
       // Handle user document not found
       print('User document not found for user ID: ${user.user!.uid}');
     }
-        
-      } catch (error) {
-        // Handle sign-in errors
-        print("Sign-in error: $error");
-      }
-    }
+  } catch (error) {
+    // Handle sign-in errors
+    print("Sign-in error: $error");
+  }
+}
 
     @override
     void dispose() {
@@ -76,19 +79,21 @@ DocumentSnapshot userDoc = await FirebaseFirestore.instance.collection('users').
             elevation: 3,
             color: Color.fromARGB(255, 203, 116, 219),
             child: Padding(
-              padding: const EdgeInsets.all(20.0),
+              padding: EdgeInsets.all(20.0),
               child: Text(
-                "Welcome to EvansLomini Deliveries!",
+                "Welcome to EvansLomini Delivery!",
+                
                 style: TextStyle(
+                  
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ),
-            const SizedBox(height:50),
-            const Text('Login'),
-            TextFormField(
+          const SizedBox(height: 50),
+              const Text("Login to application"),
+              TextFormField(
                 controller: _signInEmailController,
                 decoration: const InputDecoration(labelText: 'Email'),
               ),

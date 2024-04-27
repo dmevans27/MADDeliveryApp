@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -10,6 +11,7 @@ class OrderDetailsPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Color.fromARGB(255, 104, 193, 213),
         title: Text('Order Details'),
       ),
       body: StreamBuilder(
@@ -27,9 +29,16 @@ class OrderDetailsPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Customer: ${order?['customerName']}'),
-                Text('Restaurant Address: ${order?['restaurantAddress']}'),
-                Text('Time Placed: ${order?['timePlaced']}'),
+                Text('User Address: ${order?['userAddress']}'),
+                Text('Time Placed: ${order?['timestamp']}'),
                 // Add more details as needed
+                SizedBox(height: 16.0),
+                ElevatedButton(
+                  onPressed: () {
+                    _acceptOrder(context, orderId); // Pass context here
+                  },
+                  child: Text('Accept Order'),
+                ),
               ],
             ),
           );
@@ -37,4 +46,33 @@ class OrderDetailsPage extends StatelessWidget {
       ),
     );
   }
+
+  void _acceptOrder(BuildContext context, String orderId) async {
+  try {
+    // Get the current user's ID
+    String driverId = FirebaseAuth.instance.currentUser!.uid;
+
+    // Update the status of the order to "on the way" and set the driver ID
+    await FirebaseFirestore.instance.collection('cus_orders').doc(orderId).update({
+      'status': 'on the way',
+      'driverId': driverId,
+    });
+
+    // Add the order to the driver's accepted orders
+    await FirebaseFirestore.instance.collection('drivers').doc(driverId).collection('accepted_orders').doc(orderId).set({
+      'orderId': orderId,
+      'acceptedTimestamp': Timestamp.now(),
+    });
+
+    // Show a success message
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Order accepted successfully!')),
+    );
+  } catch (error) {
+    // Show an error message if something goes wrong
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Failed to accept order: $error')),
+    );
+  }
+}
 }

@@ -6,12 +6,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'login.dart';
+import 'homescreen.dart';
+import 'driverinterface.dart';
 
 
 enum UserRole {user, driver}
 
 class RegistrationPage extends StatefulWidget {
-  const RegistrationPage({Key? key}) : super(key: key);
+  const RegistrationPage({super.key});
 
   @override
   State<RegistrationPage> createState() => _RegistrationPageState();
@@ -28,6 +30,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
    
    UserRole? _selectedRole;
    String? _errorMessage;
+   UserRole? _selectedRole;
 
    Future<void> _register(BuildContext context) async {
       try {
@@ -39,24 +42,37 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
         // Store user's email in Firestore along with their UID
         CollectionReference users = FirebaseFirestore.instance.collection('users');
+        if (_selectedRole == UserRole.user){
         await users.doc(user.user!.uid).set({
           'Email': _registerEmailController.text,
           'FirstName':_registerFirstName.text,
           'LastName':_registerLastName.text,
-          'Role': _selectedRole == UserRole.user? 'customer' : 'driver',
+          'Role':  'user',
+          'UserAddress': _registerAddressController.text,
           'RegistrationDateTime': Timestamp.now(),
           'Username': _registerUsername.text,
           
+          
           });
-
+        }
+        else{
+         await FirebaseFirestore.instance.collection('drivers').doc(user.user!.uid).set({
+          'Email': _registerEmailController.text,
+          'FirstName':_registerFirstName.text,
+          'LastName':_registerLastName.text,
+          'Role': 'driver',
+          'UserAddress': _registerAddressController.text,
+          'RegistrationDateTime': Timestamp.now(),
+          'Username': _registerUsername.text,
+          
+          
+          });
+        }
           if (_selectedRole == UserRole.user) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+     Navigator.push(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
     } else {
       Navigator.push(context, MaterialPageRoute(builder: (context) => DriverPage()));
     }
-        
-
-      
 
       }on FirebaseAuthException catch (error) {
         
@@ -81,6 +97,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
       _registerUsername.dispose();
       super.dispose();
     }
+final TextEditingController _registerAddressController=TextEditingController();
 @override
     Widget build(BuildContext context) {
       return Scaffold(
@@ -119,6 +136,30 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   decoration: const InputDecoration(labelText: 'Username'),
                   obscureText: false,
                 ),
+                TextFormField(
+                controller: _registerAddressController,
+                decoration: const InputDecoration(labelText: 'Address'),
+                obscureText: false,
+                ),
+                DropdownButtonFormField<UserRole>(
+              value: _selectedRole,
+              items: const [
+                DropdownMenuItem(
+                  value: UserRole.user,
+                  child: Text('User'),
+                ),
+                DropdownMenuItem(
+                  value: UserRole.driver,
+                  child: Text('Driver'),
+                ),
+              ],
+              onChanged: (value) {
+                setState(() {
+                  _selectedRole = value;
+                });
+              },
+              decoration: const InputDecoration(labelText: 'Select Role'),
+            ),
                 if(_errorMessage != null)
                  Text( _errorMessage!,
                   style: const TextStyle(color: Colors.red),
